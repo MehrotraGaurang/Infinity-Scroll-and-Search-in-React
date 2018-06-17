@@ -1,0 +1,67 @@
+ <% @consigner_trips.each do |trip| %>
+
+<div class="card" >
+	<div class="card-header">Vehicle No: Invoice No:  Driver:  Phone No:</div>
+	<div class="card-body">
+		<div class="col-sm-4">
+			<div>
+				<% status = ((DateTime.now.to_time > trip.eta.to_time) && (trip.status == "Enroute")) ? "Delayed" : trip.status %>
+		        <% if status == "Ontime" %>
+		          <% color = "bg-success text-dipper" %>
+		        <% elsif status == "Delayed" || (trip.status =='Enroute' && trip.eta.strftime("%d-%m-%y").to_s < ist(Time.now).strftime("%d-%m-%y").to_s)  %>
+		          <% color = "bg-danger text-dipper" %>
+		        <% elsif status == "Early" %>
+		          <% color = "bg-info text-dipper" %>
+		        <% end %>
+		        <div class="<%= color %>" style="color: black !important;">
+		          <% if @gps[trip.id].present? && @gps[trip.id].signal_strength%>
+		            <% if @gps[trip.id].signal_strength < 11 %>
+		              <% signal_color = '#f3f' %>
+		              <% signal_text = "Bad signal strength : #{@gps[trip.id].signal_strength}" %>
+
+		              <% signal_code = 0 %>
+		            <% elsif @gps[trip.id].signal_strength > 19 %>
+		              <% signal_color = 'cyan' %>
+		              <% signal_text = 'Good signal strength' %>
+		            <% else %>
+		              <% signal_color = 'yellow' %>
+		              <% signal_text = 'Average signal strength' %>
+		            <% end %>
+		        </div>
+		        <div class="<%= color %>" style="color: black !important;">    
+		            
+		            <% if @gps[trip.id].battery_voltage < 3.2 && @gps[trip.id].battery_voltage%>
+
+		              <% battery_icon = 'fa-battery-empty' %>
+		              <% battery_text = "Bad battery strength: #{@gps[trip.id].battery_voltage} V" %>
+		            <% elsif @gps[trip.id].battery_voltage > 3.2  && @gps[trip.id].battery_voltage < 3.4 %>
+		              <% battery_icon = 'fa-battery-quarter' %>
+		              <% battery_text = 'Poor battery strength' %>
+		            <% elsif @gps[trip.id].battery_voltage >= 3.4 && @gps[trip.id].battery_voltage  4 %>
+		              <% battery_icon = 'fa-battery-three-quarters' %>
+		              <% battery_text = 'Average battery strength' %>
+		            <% else %>
+		              <% battery_icon = 'fa-battery-full' %>
+		              <% battery_text = 'Good battery strength' %>
+		            <% end %>
+		           
+          </div>
+			<div></div>
+			<div></div>
+		</div>
+		<div class="col-sm-4">
+			<div></div>
+			<div></div>
+			<div></div>
+		</div>
+		<div class="col-sm-4">
+			<div></div>
+			<div></div>
+		</div>
+		<div class="col-sm-4">
+			<div></div>
+			<div></div>
+			<div></div>
+		</div>
+	</div>
+</div>
