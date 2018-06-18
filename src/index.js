@@ -9,7 +9,7 @@ const applyUpdateResult = (result, page) => ({
 	page: page
 });
 
-let URL = `https://jsl.usedipper.com/api/v1/trucker/bookings/consigner_bookings/`;
+let URL = `Your URL`;
 
 class Infinite_Scroll extends React.Component {
 	state = {
@@ -24,16 +24,11 @@ class Infinite_Scroll extends React.Component {
 	fetchStories = () => {
 		console.log(`Fetching  ${this.state.isLoading}`);
 		this.setState({ isLoading: true });
-		fetch(URL, {
-			headers: {
-				Authorization:
-					"eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJ1c2VyX2lkIjozNjMsIm5hbWUiOiJCaHVwZW4iLCJlbWFpbCI6ImxvZ2lzdGljc0BleGltbG9naXN0aWNzLmluIn0"
-			}
-		})
+		fetch(URL)
 			.then(response => response.json())
 			.then(result => {
 				this.onSetResult(result);
-			});
+		});
 	};
 
 	onSetResult = result => {
