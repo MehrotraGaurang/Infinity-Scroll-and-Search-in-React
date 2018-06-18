@@ -1,12 +1,19 @@
 import React from "react";
+import * as FontAwesome from "react-icons/lib/fa";
 
 export default class CardView extends React.Component {
 	state = {
-		color: ""
+		color: "",
+		signal_color: "",
+		signal_text: "",
+		battery_icon: "",
+		battery_text: ""
 	};
 
 	componentDidMount() {
 		this.onStatusUpdate();
+		this.onGPSsignal();
+		this.onBatterySignal();
 	}
 
 	onStatusUpdate() {
@@ -32,35 +39,128 @@ export default class CardView extends React.Component {
 		}
 	}
 
-	// onGPSUpdate(){
-	// 	 if ((@gps[trip.id].present) && (@gps[trip.id].signal_strength)){
-	//             if (@gps[trip.id].signal_strength < 11){
-	//               signal_color = '#f3f'
-	//               signal_text = "Bad signal strength : #{@gps[trip.id].signal_strength}"
+	onGPSsignal() {
+		console.log("GPS IS DUDE:", this.props.gps);
+		if (this.props.gps[this.props.trip.id]) {
+			if (this.props.gps[this.props.trip.id].signal_strength) {
+				if (this.props.gps[this.props.trip.id].signal_strength < 11) {
+					this.setState({
+						signal_color: "#f3f",
+						signal_text: `Bad signal strength : ${
+							this.props.gps[this.props.trip.id].signal_strength
+						}`
+					});
 
-	//               signal_code = 0 }
-	//             else if(@gps[trip.id].signal_strength > 19){
-	//               signal_color = 'cyan'
-	//               signal_text = 'Good signal strength' }
-	//             else
-	//               {signal_color = 'yellow'
-	//               signal_text = 'Average signal strength'}}
+					// signal_code = 0;
+				} else if (
+					this.props.gps[this.props.trip.id].signal_strength > 19
+				) {
+					this.setState({
+						signal_color: "cyan",
+						signal_text: "Good signal strength"
+					});
+				} else {
+					this.setState({
+						signal_color: "yellow",
+						signal_text: "Average signal strength"
+					});
+				}
+			}
+		} else {
+			this.setState({
+				signal_color: "#ffffff",
+				signal_text: `N/A`
+			});
+		}
+	}
 
-	// }
-
+	onBatterySignal() {
+		if (this.props.gps[this.props.trip.id]) {
+			if (
+				this.props.gps[this.props.trip.id].battery_voltage < 3.2 &&
+				this.props.gps[this.props.trip.id].battery_voltage
+			) {
+				this.setState({
+					battery_icon: 0,
+					battery_text: `Bad battery strength: ${
+						this.props.gps[this.props.trip.id].battery_voltage
+					} V`
+				});
+			} else if (
+				this.props.gps[this.props.trip.id].battery_voltage >= 3.2 &&
+				this.props.gps[this.props.trip.id].battery_voltage < 3.4
+			) {
+				this.setState({
+					battery_icon: 1,
+					battery_text: "Poor battery strength"
+				});
+			} else if (
+				this.props.gps[this.props.trip.id].battery_voltage >= 3.4 &&
+				this.props.gps[this.props.trip.id].battery_voltage < 4
+			) {
+				this.setState({
+					battery_icon: 2,
+					battery_text: "Average battery strength"
+				});
+			} else {
+				this.setState({
+					battery_icon: 3,
+					battery_text: "Good battery strength"
+				});
+			}
+		} else {
+			this.setState({
+				signal_color: "#ffffff",
+				signal_text: `N/A`
+			});
+		}
+	}
 	render() {
-		const { trip } = this.props;
-		const { color } = this.state;
-		console.log(`Color is ${color} for vehicle_no ${trip.vehicle_no}`);
+		const { trip, gps } = this.props;
+		const {
+			color,
+			signal_color,
+			signal_text,
+			battery_icon,
+			battery_text
+		} = this.state;
 
-		const divStyle = {
+		const statusStyle = {
 			border: "1px solid black",
 			borderRadius: "5px",
 			marginTop: "4px",
 			backgroundColor: color,
 			textAlign: "center"
 		};
-		console.log(divStyle);
+		const signalStatus = {
+			border: "1px solid black",
+			backgroundColor: signal_color,
+			width: "50%",
+			marginTop: "15px",
+			textOverflow: "ellipsis",
+			whiteSpace: "noWrap",
+			overflow: "hidden"
+		};
+
+		console.log(`Battery icon : ${battery_icon}`);
+		console.log(trip.id);
+
+		const timeStamp = () => {
+			if (gps[trip.id]) {
+				return gps[trip.id].ist_timestamp;
+			} else {
+				return "N/A";
+			}
+		};
+
+		const iconBattery = () => {
+			if (battery_icon === 0) return <FontAwesome.FaBattery0 />;
+			else if (battery_icon === 1) return <FontAwesome.FaBattery1 />;
+			else if (battery_icon === 2) return <FontAwesome.FaBattery3 />;
+			else if (battery_icon === 3) return <FontAwesome.FaBattery4 />;
+		};
+
+		console.log(iconBattery);
 
 		return (
 			<div className="container-fluid">
@@ -136,13 +236,9 @@ export default class CardView extends React.Component {
 										</div>
 										<div
 											className="col-sm-3"
-											style={{
-												border: "1px solid black",
-												width: "50%",
-												marginTop: "15px"
-											}}
+											style={signalStatus}
 										>
-											GPS
+											{signal_text}
 										</div>
 									</div>
 								</div>
@@ -196,7 +292,7 @@ export default class CardView extends React.Component {
 												marginBottom: "15px"
 											}}
 										>
-											Battery
+											{iconBattery()}
 										</div>
 										<div
 											className="col-sm-3"
@@ -204,10 +300,13 @@ export default class CardView extends React.Component {
 												border: "1px solid black",
 												width: "50%",
 												paddingBottom: "0px",
-												marginBottom: "15px"
+												marginBottom: "15px",
+												whiteSpace: "noWrap",
+												overflow: "hidden",
+												textOverflow: "ellipsis"
 											}}
 										>
-											Time
+											{timeStamp()}
 										</div>
 									</div>
 								</div>
@@ -250,7 +349,7 @@ export default class CardView extends React.Component {
 						</div>
 						<div className="row">
 							<div className="col-sm-12">
-								<div className="col-sm-3" style={divStyle}>
+								<div className="col-sm-3" style={statusStyle}>
 									<b>{trip.status ? trip.status : "N/A"}</b>
 								</div>
 								<div

@@ -1,24 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import queryString from "query-string";
-import List from "./List.js";
+import Trips from "./List.js";
 
-const applyUpdateResult = (result, page) => ({
-	hits: result,
-	isLoading: false,
-	page: page
-});
-
-let URL = `https://jsl.usedipper.com/api/v1/trucker/bookings/consigner_bookings/`;
+let URL = `https://jsl.usedipper.com/api/v1/consigner/eta?is_active=true`;
 
 class Infinite_Scroll extends React.Component {
 	state = {
-		hits: [],
+		trips: [],
+		gps: {},
+		percentageDistanceCovered: {},
 		page: 1,
 		isLoading: false,
 		inputValue: "",
 		onPressed: false,
-		valueState: []
+		currentState: []
 	};
 
 	fetchStories = () => {
@@ -37,13 +33,16 @@ class Infinite_Scroll extends React.Component {
 	};
 
 	onSetResult = result => {
-		const data = result.data.consigner_trips;
-		if (data !== undefined) {
-			const listResponse = Object.values(data);
-			this.state.hits.push.apply(this.state.hits, listResponse);
+		const tripsValues = Object.values(result.trips);
+		if (tripsValues) {
+			this.setState({
+				trips: [...this.state.trips, ...tripsValues],
+				gps:  {...this.state.gps, 	...result.gps},
+				percentageDistanceCovered: { ...result.percentageDistanceCovered, ...this.state.percentageDistanceCovered},
+				isLoading: false,
+				page: this.state.page + 1
+			});
 		}
-		this.setState(applyUpdateResult(this.state.hits, this.state.page + 1));
-		console.log(`Hits are ${this.state.hits}`);
 	};
 
 	onContinuedLoading = e => {
@@ -72,7 +71,7 @@ class Infinite_Scroll extends React.Component {
 
 		if (this.state.inputValue.length === 2) {
 			this.setState({
-				valueState: [...this.state.hits]
+				currentState: [...this.state.trips]
 			});
 		}
 		if (this.state.inputValue.length > 2) {
@@ -84,12 +83,20 @@ class Infinite_Scroll extends React.Component {
 			this.fetchStories();
 		} else {
 			this.setState({
-				hits: [...this.state.valueState]
+				trips: [...this.state.currentState]
 			});
 		}
 	}
 
 	render() {
+		const {
+			trips,
+			gps,
+			percentageDistanceCovered,
+			isLoading,
+			page
+		} = this.state;
+		console.log(gps);
 		return (
 			<div className="page">
 				<div className="interactions">
@@ -100,11 +107,13 @@ class Infinite_Scroll extends React.Component {
 				<input type="text" onChange={evt => this.onUpdate(evt)} />
 
 				{this.state.onPressed && (
-					<List
-						list={this.state.hits}
-						page={this.state.page}
+					<Trips
+						trips={trips}
+						gps={gps}
+						percentageDistanceCovered={percentageDistanceCovered}
+						page={page}
 						onContinuedLoading={this.onContinuedLoading}
-						isLoading={this.state.isLoading}
+						isLoading={isLoading}
 					/>
 				)}
 			</div>
